@@ -37,8 +37,8 @@ class _DiagnosisHistoryState extends State<DiagnosisHistory> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      decoration: BoxDecoration(
-        gradient: LinearGradient(begin: Alignment.topCenter,end: Alignment.bottomCenter,colors: [Color(0xffe4f2f7), Colors.white]),
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(begin: Alignment.topCenter,end: Alignment.bottomCenter,colors: [const Color(0xffe4f2f7), Colors.white]),
 
       ),
       child: Scaffold(
@@ -46,7 +46,7 @@ class _DiagnosisHistoryState extends State<DiagnosisHistory> {
         appBar: AppBar(
           actions: [
             IconButton(
-              icon: Icon(Icons.search,
+              icon: const Icon(Icons.search,
               ),
               onPressed: (){
                 showSearch(
@@ -59,10 +59,10 @@ class _DiagnosisHistoryState extends State<DiagnosisHistory> {
           elevation: 5.0,
           backgroundColor: ColorsConsts.primaryColor,
           toolbarHeight: 65.0,
-          title: Center(child: Text("Diagnosis History"
+          title: const Center(child: const Text("Diagnosis History"
           )),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.vertical(
+          shape: const RoundedRectangleBorder(
+            borderRadius: const BorderRadius.vertical(
               bottom: Radius.circular(30),
             ),
           ),
@@ -78,16 +78,16 @@ class _DiagnosisHistoryState extends State<DiagnosisHistory> {
                   children: [
                     ListView.separated(
                       itemBuilder: (context,index) => buildDiagnosisItem(index),
-                      separatorBuilder: (context,index) => SizedBox(height: 20.0,),
+                      separatorBuilder: (context,index) => const SizedBox(height: 20.0,),
                       itemCount: diagnosis.length,
-                      physics: NeverScrollableScrollPhysics(),
+                      physics: const NeverScrollableScrollPhysics(),
                       shrinkWrap: true,
                     ),
                   ],
                 ),
               ),
             ),
-          fallback: (build) => Center(child: CircularProgressIndicator(color: Colors.blue,)),
+          fallback: (build) => const Center(child: const CircularProgressIndicator(color: Colors.blue,)),
         ),
       ),
     );
@@ -134,16 +134,16 @@ class _DiagnosisHistoryState extends State<DiagnosisHistory> {
             children: [
               CircleAvatar(
                 backgroundImage: genders[index] != "Male" ?
-                AssetImage("assets/images/female_user.png")  : AssetImage("assets/images/male_user.png") ,
+                const AssetImage("assets/images/female_user.png")  : const AssetImage("assets/images/male_user.png") ,
               ),
-              SizedBox(width: 10.0,),
+              const SizedBox(width: 10.0,),
               Flexible(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(diagnosisSymptoms[index].length-1 >= 1 ? diagnosisSymptoms[index][0] +", "+ diagnosisSymptoms[index][1]:
                     diagnosisSymptoms[index][0],
-                    style: TextStyle(
+                    style: const TextStyle(
                       fontWeight: FontWeight.bold
                     ),
                     overflow: TextOverflow.ellipsis,
@@ -153,9 +153,9 @@ class _DiagnosisHistoryState extends State<DiagnosisHistory> {
                       mainAxisAlignment: MainAxisAlignment.start,
                       children: [
                         Text("Gender: ${genders[index]}"),
-                        Spacer(),
+                        const Spacer(),
                         Text("Age: ${ages[index].toString()}"),
-                        Spacer(),
+                        const Spacer(),
                         Text(dates[index].day.toString()+"-"+dates[index].month.toString()+"-"+dates[index].year.toString()),
 
                       ],
@@ -186,7 +186,7 @@ class MySearchDelegate extends SearchDelegate
 
   @override
   List<Widget> buildActions(BuildContext context) => [IconButton(
-    icon: Icon(Icons.clear),
+    icon: const Icon(Icons.clear),
     onPressed: (){
       query = '';
     },
@@ -197,11 +197,11 @@ class MySearchDelegate extends SearchDelegate
       onPressed: (){
         close(context, null);
       },
-      icon: Icon(Icons.arrow_back)
+      icon: const Icon(Icons.arrow_back)
   );
 
   @override
-  Widget buildResults(BuildContext context) => SizedBox();
+  Widget buildResults(BuildContext context) => const SizedBox();
 
   @override
   Widget buildSuggestions(BuildContext context) {
@@ -217,7 +217,7 @@ class MySearchDelegate extends SearchDelegate
       padding: const EdgeInsets.symmetric(horizontal: 10.0),
       child: Column(
         children: [
-          SizedBox(height: 20.0,),
+          const SizedBox(height: 20.0,),
           Expanded(
             child: ListView.separated(
                 itemBuilder: (context, index)
@@ -228,7 +228,7 @@ class MySearchDelegate extends SearchDelegate
                   return buildDiagnosisItem(suggestionIndex, context);
                 }
               },
-              separatorBuilder: (context,index) => SizedBox(height: 20.0,),
+              separatorBuilder: (context,index) => const SizedBox(height: 20.0,),
               itemCount: suggestions.length,
             ),
           ),
@@ -258,16 +258,16 @@ class MySearchDelegate extends SearchDelegate
             children: [
               CircleAvatar(
                 backgroundImage: genders[index] != "Male" ?
-                AssetImage("assets/images/female_user.png")  : AssetImage("assets/images/male_user.png") ,
+                const AssetImage("assets/images/female_user.png")  : const AssetImage("assets/images/male_user.png") ,
               ),
-              SizedBox(width: 10.0,),
+              const SizedBox(width: 10.0,),
               Flexible(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(diagnosisSymptoms[index].length-1 >= 1 ? diagnosisSymptoms[index][0] +", "+ diagnosisSymptoms[index][1]:
                     diagnosisSymptoms[index][0],
-                      style: TextStyle(
+                      style: const TextStyle(
                           fontWeight: FontWeight.bold
                       ),
                       overflow: TextOverflow.ellipsis,
@@ -277,9 +277,9 @@ class MySearchDelegate extends SearchDelegate
                       mainAxisAlignment: MainAxisAlignment.start,
                       children: [
                         Text("Gender: ${genders[index]}"),
-                        Spacer(),
+                        const Spacer(),
                         Text("Age: ${ages[index].toString()}"),
-                        Spacer(),
+                        const Spacer(),
                         Text(dates[index].day.toString()+"-"+dates[index].month.toString()+"-"+dates[index].year.toString()),
 
                       ],

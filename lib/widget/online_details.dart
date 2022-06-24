@@ -3,7 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:hexcolor/hexcolor.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
+import 'package:sehetak2/screens/chat/VIews/ChatScreen.dart';
 import 'package:sehetak2/screens/chat/VIews/recchat.dart';
+import 'package:sehetak2/screens/dshbord-home/dashboard_home.dart';
 
 class OnlineDetailes extends StatelessWidget {
   String name;
@@ -167,7 +169,7 @@ class OnlineDetailes extends StatelessWidget {
                       ),
                       child: const Icon(Icons.message_rounded),
                       onPressed: () {
-                        Navigator.of(context).push(MaterialPageRoute(builder: (context)=>const recchat()));
+                        Navigator.of(context).push(MaterialPageRoute(builder: (context)=> ChatScreen(name, images, Dashboard.uid)));
                       },
                     ),
                   ),

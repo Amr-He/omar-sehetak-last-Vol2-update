@@ -16,9 +16,9 @@ import 'package:sehetak2/screens/chat/helperfunctions/shardpref_helper.dart';
 import 'package:uuid/uuid.dart';
 
 class ChatScreen extends StatefulWidget {
-  final String chatWithUsername, name ,profileUrl ;
+  final String name ,profileUrl,currentUid ;
 
-  ChatScreen(this.chatWithUsername, this.name,  this.profileUrl  );
+  ChatScreen(this.name,  this.profileUrl,this.currentUid  );
   @override
   _ChatScreenState createState() => _ChatScreenState();
 }
@@ -26,9 +26,9 @@ class ChatScreen extends StatefulWidget {
 class _ChatScreenState extends State<ChatScreen> {
   String message="";
   String chatRoomId, messageId = "";
-  String profilePicUrl = "", name = "", username = "";
+  String profilePicUrl = "", name = "";
   Stream messageStream,pickStream;
-  String myName, myProfilePic, myUserName, myEmail;
+  String myName, myProfilePic, myEmail;
   TextEditingController controller = TextEditingController();
   final FocusNode focusNode = FocusNode();
   PlatformFile pickedFile;
@@ -96,13 +96,26 @@ class _ChatScreenState extends State<ChatScreen> {
 
 
 
-  getMyInfoFromSharedPreference() async {
-    myName = await SharedPreferenceHelper().getDisplayName();
-    myProfilePic = await SharedPreferenceHelper().getUserProfileUrl();
-    myUserName = await SharedPreferenceHelper().getUserName();
-    myEmail = await SharedPreferenceHelper().getUserEmail();
 
-    chatRoomId = getChatRoomIdByUsernames(widget.chatWithUsername, myUserName,);
+  void getData() async {
+    User user = _auth.currentUser;
+    // widget.currentUid = user.uid;
+    print('user.displayName ${user.displayName}');
+    print('user.photoURL ${user.photoURL}');
+    final DocumentSnapshot userDoc = user.isAnonymous
+        ? null
+        : await FirebaseFirestore.instance.collection('users').doc(widget.currentUid).get();
+    if (userDoc == null) {
+      return;
+    } else {
+      setState(() {
+        myName = userDoc.get('name');
+        myEmail = user.email;
+        myProfilePic = userDoc.get('imageUrl');
+      });
+    }
+    chatRoomId = getChatRoomIdByUsernames(widget.name, myName,);
+    // print("name $_name");
   }
 
   getChatRoomIdByUsernames(String a, String b) {
@@ -120,7 +133,7 @@ class _ChatScreenState extends State<ChatScreen> {
 
       Map<String, dynamic> messageInfoMap = {
         "message": message,
-        "sendBy": myUserName,
+        "sendBy": myName,
         "ts": lastMessageTs,
         "imgUrl": myProfilePic
 
@@ -137,7 +150,7 @@ class _ChatScreenState extends State<ChatScreen> {
         Map<String, dynamic> lastMessageInfoMap = {
           "lastMessage": message,
           "lastMessageSendTs": lastMessageTs,
-          "lastMessageSendBy": myUserName
+          "lastMessageSendBy": myName
         };
 
         DatabaseMethods().updateLastMessageSend(chatRoomId, lastMessageInfoMap);
@@ -207,7 +220,7 @@ class _ChatScreenState extends State<ChatScreen> {
               DocumentSnapshot ds = snapshot.data.docs[index];
               return chatMessageBody(
 
-                  ds["message"], myUserName == ds["sendBy"]);
+                  ds["message"], myName == ds["sendBy"]);
             }):Center(child: CircularProgressIndicator(),);
       },
     );
@@ -220,7 +233,7 @@ class _ChatScreenState extends State<ChatScreen> {
   }
 
   doThisOnLaunch() async {
-    await getMyInfoFromSharedPreference();
+    await getData();
     getAndSetMessages();
   }
 

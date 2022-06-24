@@ -81,7 +81,11 @@ dependencies:
   animated_text_kit: any
   animated_widgets: any
   flutter_phone_direct_caller: ^2.1.1
-  mb_contact_form: any
+  mb_button: any
+  url_launcher: any
+  share: ^2.0.4
+
+
   
 dev_dependencies:
   flutter_test:

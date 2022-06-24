@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:mb_contact_form/mb_contact_form.dart';
+import 'package:sehetak2/packages/mb_contact_form.dart';
 
 
 class Contact extends StatefulWidget {
@@ -29,7 +29,7 @@ class _ContactState extends State<Contact> {
       body:  const MBContactForm(
         hasHeading: false,
         withIcons: false,
-        destinationEmail: "email@gmail.com",
+        destinationEmail: "lolopop867@gmail.com",
       ),
     );
   }

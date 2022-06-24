@@ -14,7 +14,7 @@ class _showSosState extends State<showSos> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color.fromRGBO(0, 0, 0, 0),
+      backgroundColor: Colors.transparent,
       body: CupertinoAlertDialog(
         title: const Text("SOS"),
         content: const Text("are you sure make emergency call?"),
@@ -23,7 +23,7 @@ class _showSosState extends State<showSos> {
             isDefaultAction: true,
             child: const Text('Yes'),
             onPressed: () {
-              FlutterPhoneDirectCaller.callNumber("+201027860531");
+              FlutterPhoneDirectCaller.callNumber("123");
               },
           ),
           CupertinoDialogAction(

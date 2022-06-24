@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:hexcolor/hexcolor.dart';
 import 'package:sehetak2/screens/chat/Services/auth.dart';
@@ -14,9 +15,10 @@ class recchat extends StatefulWidget {
 }
 
 class _recchatState extends State<recchat> {
+  final FirebaseAuth _auth = FirebaseAuth.instance;
 
   bool isSearching = false;
-  String myName, myProfilePic, myUserName, myEmail;
+  String myName, myProfilePic, myEmail;
   Stream usersStream, chatRoomsStream;
   String currentUserId;
   AuthMethods authProvider;
@@ -26,16 +28,25 @@ class _recchatState extends State<recchat> {
 
 
 
-
-
-  getMyInfoFromSharedPreference() async {
-    myName = await SharedPreferenceHelper().getDisplayName();
-    myProfilePic = await SharedPreferenceHelper().getUserProfileUrl();
-    myUserName = await SharedPreferenceHelper().getUserName();
-    myEmail = await SharedPreferenceHelper().getUserEmail();
-    setState(() {});
+  void getData() async {
+    User user = _auth.currentUser;
+    currentUserId = user.uid;
+    print('user.displayName ${user.displayName}');
+    print('user.photoURL ${user.photoURL}');
+    final DocumentSnapshot userDoc = user.isAnonymous
+        ? null
+        : await FirebaseFirestore.instance.collection('users').doc(currentUserId).get();
+    if (userDoc == null) {
+      return;
+    } else {
+      setState(() {
+        myName = userDoc.get('name');
+        myEmail = user.email;
+        myProfilePic = userDoc.get('imageUrl');
+      });
+    }
+    // print("name $_name");
   }
-
   getChatRoomIdByUsernames(String a, String b) {
     if (a.substring(0, 1).codeUnitAt(0) > b.substring(0, 1).codeUnitAt(0)) {
       return "$b\_$a";
@@ -63,25 +74,25 @@ class _recchatState extends State<recchat> {
             shrinkWrap: true,
             itemBuilder: (context, index) {
               DocumentSnapshot ds = snapshot.data.docs[index];
-              return ChatRoomListTile(ds["lastMessage"], ds.id, myUserName);
+              return ChatRoomListTile(ds["lastMessage"], ds.id, myName,currentUserId);
             })
             : const Center(child: const CircularProgressIndicator());
       },
     );
   }
 
-  Widget searchListUserTile({String profileUrl, name, username, email}) {
+  Widget searchListUserTile({String profileUrl, name, email}) {
     return GestureDetector(
       onTap: () {
-        var chatRoomId = getChatRoomIdByUsernames(myUserName, username);
+        var chatRoomId = getChatRoomIdByUsernames(myName, name);
         Map<String, dynamic> chatRoomInfoMap = {
-          "users": [myUserName, username , myName ,name]
+          "users": [myEmail, email , myName ,name]
         };
         DatabaseMethods().createChatRoom(chatRoomId, chatRoomInfoMap);
         Navigator.push(
             context,
             MaterialPageRoute(
-                builder: (context) => ChatScreen(username, name ,profileUrl)));
+                builder: (context) => ChatScreen( name ,profileUrl,currentUserId)));
       },
       child: Container(
         margin: const EdgeInsets.symmetric(vertical: 8),
@@ -116,10 +127,10 @@ class _recchatState extends State<recchat> {
           itemBuilder: (context, index) {
             DocumentSnapshot ds = snapshot.data.docs[index];
             return searchListUserTile(
-                profileUrl: ds["imgUrl"],
+                profileUrl: ds["imageUrl"],
                 name: ds["name"],
-                email: ds["email"],
-                username: ds["username"]);
+                email: ds["email"]
+            );
           },
         )
             : const Center(
@@ -135,7 +146,7 @@ class _recchatState extends State<recchat> {
   }
 
   onScreenLoaded() async {
-    await getMyInfoFromSharedPreference();
+    await getData();
     getChatRooms();
   }
 
@@ -244,8 +255,8 @@ class _recchatState extends State<recchat> {
 }
 
 class ChatRoomListTile extends StatefulWidget {
-  final String lastMessage, chatRoomId, myUsername;
-  const ChatRoomListTile(this.lastMessage, this.chatRoomId, this.myUsername);
+  final String lastMessage, chatRoomId, myUsername,currentUid;
+  const ChatRoomListTile(this.lastMessage, this.chatRoomId, this.myUsername,this.currentUid);
 
   @override
   _ChatRoomListTileState createState() => _ChatRoomListTileState();
@@ -278,7 +289,7 @@ class _ChatRoomListTileState extends State<ChatRoomListTile> {
         Navigator.push(
             context,
             MaterialPageRoute(
-                builder: (context) => ChatScreen(username, name ,profilePicUrl)));
+                builder: (context) => ChatScreen(name ,profilePicUrl,widget.currentUid)));
       },
       child: Container(
         height: 80,

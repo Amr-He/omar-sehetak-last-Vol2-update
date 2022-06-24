@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:hexcolor/hexcolor.dart';
 import 'package:sehetak2/screens/bottom_bar.dart';
 import 'package:sehetak2/screens/components%20drawer/contact.dart';
+import 'package:sehetak2/screens/components%20drawer/setting.dart';
 import 'package:sehetak2/screens/medicine-remminder/screens/home/home.dart';
 import 'package:sehetak2/screens/pediatric-home.dart';
 import 'package:sehetak2/screens/sos/sos.dart';
@@ -131,14 +132,13 @@ class _DashboardState extends State<Dashboard> {
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.start,
                     children: [
+                      const Text(
+                        "Welcome To Sehetk",
+                        style: TextStyle(fontSize: 15,fontWeight: FontWeight.bold,color: Colors.black,),
+                      ),
                       Text(
                         Dashboard.name != null ? Dashboard.name : "User",
                         style: const TextStyle(fontSize: 15,fontWeight: FontWeight.bold,color: Colors.black),
-                      ),
-                      const Text(
-                        "Welcome To Sehetk!!",
-                        style: TextStyle(fontSize: 15,fontWeight: FontWeight.bold,color: Color(0xff80B1FE),),
-
                       ),
                     ],
                   ),
@@ -338,6 +338,7 @@ class _DashboardState extends State<Dashboard> {
 
 
 class NavDrawer extends StatelessWidget {
+  final FirebaseAuth _auth = FirebaseAuth.instance;
   @override
   Widget build(BuildContext context) {
     return Drawer(
@@ -361,7 +362,7 @@ class NavDrawer extends StatelessWidget {
                   const TextStyle(fontWeight: FontWeight.bold,fontSize: 13,color: Colors.black),),
                 ),
                 Expanded(
-                  child: Text(Dashboard.phoneNumber != null ? Dashboard.phoneNumber.toString() : "Phone Number",style:
+                  child: Text(Dashboard.phoneNumber != null ? "0"+Dashboard.phoneNumber.toString() : "Phone Number",style:
                   TextStyle(fontSize: 12,color: Colors.grey[600]),),
                 )
               ],
@@ -376,7 +377,9 @@ class NavDrawer extends StatelessWidget {
           ListTile(
             leading:  Image.asset("assets/lottie/setting.png"),
             title: Text('Setting',style: TextStyle(color: HexColor("#807C7C")),),
-            onTap: () => {Navigator.of(context).pop()},
+            onTap:  (){
+            Navigator.of(context).push(MaterialPageRoute(builder: (context)=>SettingsPage()));
+            },
           ),
           ListTile(
             leading: Image.asset("assets/lottie/Group.png"),
@@ -389,15 +392,14 @@ class NavDrawer extends StatelessWidget {
             color: HexColor("#E5E5E9"),
           ),
           ListTile(
-            leading: Image.asset("assets/lottie/share 1.png"),
-            title: Text('Tell your friend',style: TextStyle(color: HexColor("#807C7C")),),
-            onTap: () => {Navigator.of(context).pop()},
-          ),
-          ListTile(
             leading: Image.asset("assets/lottie/Logout.png"),
             title: Text('Sign out',style: TextStyle(color: HexColor("#807C7C")),),
             onTap: () async {
-              // await _auth.signOut().then(
+             await _auth.signOut().then((value) {
+            Navigator.pop(context);
+            });
+
+                  // await _auth.signOut().then(
               //         (value) =>
               //         Navigator.pop(context));
             },

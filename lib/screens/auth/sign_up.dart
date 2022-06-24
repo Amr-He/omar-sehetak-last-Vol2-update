@@ -1,6 +1,8 @@
+import 'dart:ffi';
 import 'dart:io';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:conditional_builder/conditional_builder.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/services.dart';
@@ -15,32 +17,51 @@ import 'package:wave/wave.dart';
 
 class SignUpScreen extends StatefulWidget {
   static const routeName = '/SignUpScreen';
-
-  const SignUpScreen({Key key}) : super(key: key);
   @override
   _SignUpScreenState createState() => _SignUpScreenState();
 }
 
 class _SignUpScreenState extends State<SignUpScreen> {
+
   final FocusNode _passwordFocusNode = FocusNode();
   final FocusNode _emailFocusNode = FocusNode();
   final FocusNode _phoneNumberFocusNode = FocusNode();
+  final FocusNode _priceFocusNode = FocusNode();
+  final FocusNode _describtionFocusNode = FocusNode();
+  final FocusNode _titleFocusNode = FocusNode();
   bool _obscureText = true;
   String _emailAddress = '';
   String _password = '';
   String _fullName = '';
   String url;
   int _phoneNumber;
+  String speciality = "Dermatology";
   File _pickedImage;
   final _formKey = GlobalKey<FormState>();
   final FirebaseAuth _auth = FirebaseAuth.instance;
   GlobalMethods _globalMethods = GlobalMethods();
   bool _isLoading = false;
+  bool _isDoctor = false;
+  var _specialities = [
+    "Dermatology",
+    "Dentistry",
+    "Neurology",
+    "Orthopedics",
+    "Ophthalmology",
+  ];
+
+  double _price;
+  String _describtion;
+
+  String _title;
   @override
   void dispose() {
     _passwordFocusNode.dispose();
     _emailFocusNode.dispose();
     _phoneNumberFocusNode.dispose();
+    _priceFocusNode.dispose();
+    _describtionFocusNode.dispose();
+    _titleFocusNode.dispose();
     super.dispose();
   }
 
@@ -50,6 +71,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
     var date = DateTime.now().toString();
     var dateparse = DateTime.parse(date);
     var formattedDate = "${dateparse.day}-${dateparse.month}-${dateparse.year}";
+    String sr = speciality == "Orthopedics" ? "Sr.${speciality.substring(0,speciality.length-2)}st" : speciality == "Dentistry"? "Sr.dentist" : "Sr.${speciality.substring(0,speciality.length-1)}ist";
+    print(sr);
     if (isValid) {
       _formKey.currentState.save();
       try {
@@ -72,7 +95,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
           final _uid = user.uid;
           user.updateProfile(photoURL: url, displayName: _fullName);
           user.reload();
-          await FirebaseFirestore.instance.collection('users').doc(_uid).set({
+          FirebaseFirestore.instance.collection('users').doc(_uid).set({
             'id': _uid,
             'name': _fullName,
             'email': _emailAddress,
@@ -80,6 +103,18 @@ class _SignUpScreenState extends State<SignUpScreen> {
             'imageUrl': url,
             'joinedAt': formattedDate,
             'createdAt': Timestamp.now(),
+            'doctor' : _isDoctor.toString(),
+          }).then((value) async {
+            await FirebaseFirestore.instance.collection('doctors').doc(_uid).set({
+              'description': _describtion,
+              'image' : url,
+              'name' : _fullName,
+              'price' : _price.toString(),
+              'rating' : 4.0,
+              'specialty' : speciality,
+              'sr' : sr,
+              'title' : _title,
+            });
           });
           Navigator.canPop(context) ? Navigator.pop(context) : null;
         }
@@ -142,12 +177,12 @@ class _SignUpScreenState extends State<SignUpScreen> {
                     ],
                     durations: [19440, 10800],
                     heightPercentages: [0.10, 0.15],
-                    blur: const MaskFilter.blur(BlurStyle.solid, 10),
+                    blur: MaskFilter.blur(BlurStyle.solid, 10),
                     gradientBegin: Alignment.bottomLeft,
                     gradientEnd: Alignment.topRight,
                   ),
                   waveAmplitude: 0,
-                  size: const Size(
+                  size: Size(
                     double.infinity,
                     double.infinity,
                   ),
@@ -156,14 +191,14 @@ class _SignUpScreenState extends State<SignUpScreen> {
             ),
             Column(
               children: [
-                const SizedBox(
+                SizedBox(
                   height: 30,
                 ),
                 Stack(
                   children: [
                     Container(
                       margin:
-                          const EdgeInsets.symmetric(vertical: 30, horizontal: 30),
+                          EdgeInsets.symmetric(vertical: 30, horizontal: 30),
                       child: CircleAvatar(
                         radius: 71,
                         backgroundColor: Colors.white,
@@ -182,9 +217,9 @@ class _SignUpScreenState extends State<SignUpScreen> {
                         child: RawMaterialButton(
                           elevation: 10,
                           fillColor: ColorsConsts.gradiendLEnd,
-                          child: const Icon(Icons.add_a_photo),
-                          padding: const EdgeInsets.all(15.0),
-                          shape: const CircleBorder(),
+                          child: Icon(Icons.add_a_photo),
+                          padding: EdgeInsets.all(15.0),
+                          shape: CircleBorder(),
                           onPressed: () {
                             showDialog(
                                 context: context,
@@ -204,9 +239,9 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                             splashColor: Colors.purpleAccent,
                                             child: Row(
                                               children: [
-                                                const Padding(
+                                                Padding(
                                                   padding:
-                                                      EdgeInsets.all(8.0),
+                                                      const EdgeInsets.all(8.0),
                                                   child: Icon(
                                                     Icons.camera,
                                                     color: Colors.purpleAccent,
@@ -229,9 +264,9 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                             splashColor: Colors.purpleAccent,
                                             child: Row(
                                               children: [
-                                                const Padding(
+                                                Padding(
                                                   padding:
-                                                      EdgeInsets.all(8.0),
+                                                      const EdgeInsets.all(8.0),
                                                   child: Icon(
                                                     Icons.image,
                                                     color: Colors.purpleAccent,
@@ -253,10 +288,10 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                             onTap: _remove,
                                             splashColor: Colors.purpleAccent,
                                             child: Row(
-                                              children: const [
+                                              children: [
                                                 Padding(
                                                   padding:
-                                                      EdgeInsets.all(8.0),
+                                                      const EdgeInsets.all(8.0),
                                                   child: Icon(
                                                     Icons.remove_circle,
                                                     color: Colors.red,
@@ -286,10 +321,24 @@ class _SignUpScreenState extends State<SignUpScreen> {
                   key: _formKey,
                   child: Column(
                     children: [
+                      Center(
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Checkbox(
+                              onChanged: (value) {_isDoctor = value; setState(() {});},
+                              value: _isDoctor,
+
+                            ),
+                            SizedBox(width: 5.0,),
+                            Text("Register As a Doctor"),
+                          ],
+                        ),
+                      ),
                       Padding(
                         padding: const EdgeInsets.all(12.0),
                         child: TextFormField(
-                          key: const ValueKey('name'),
+                          key: ValueKey('name'),
                           validator: (value) {
                             if (value.isEmpty) {
                               return 'name cannot be null';
@@ -303,7 +352,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                           decoration: InputDecoration(
                               border: const UnderlineInputBorder(),
                               filled: true,
-                              prefixIcon: const Icon(Icons.person),
+                              prefixIcon: Icon(Icons.person),
                               labelText: 'Full name',
                               fillColor: Theme.of(context).backgroundColor),
                           onSaved: (value) {
@@ -314,7 +363,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                       Padding(
                         padding: const EdgeInsets.all(12.0),
                         child: TextFormField(
-                          key: const ValueKey('email'),
+                          key: ValueKey('email'),
                           focusNode: _emailFocusNode,
                           validator: (value) {
                             if (value.isEmpty || !value.contains('@')) {
@@ -329,7 +378,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                           decoration: InputDecoration(
                               border: const UnderlineInputBorder(),
                               filled: true,
-                              prefixIcon: const Icon(Icons.email),
+                              prefixIcon: Icon(Icons.email),
                               labelText: 'Email Address',
                               fillColor: Theme.of(context).backgroundColor),
                           onSaved: (value) {
@@ -340,7 +389,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                       Padding(
                         padding: const EdgeInsets.all(12.0),
                         child: TextFormField(
-                          key: const ValueKey('Password'),
+                          key: ValueKey('Password'),
                           validator: (value) {
                             if (value.isEmpty || value.length < 7) {
                               return 'Please enter a valid Password';
@@ -352,7 +401,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                           decoration: InputDecoration(
                               border: const UnderlineInputBorder(),
                               filled: true,
-                              prefixIcon: const Icon(Icons.lock),
+                              prefixIcon: Icon(Icons.lock),
                               suffixIcon: GestureDetector(
                                 onTap: () {
                                   setState(() {
@@ -376,7 +425,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                       Padding(
                         padding: const EdgeInsets.all(12.0),
                         child: TextFormField(
-                          key: const ValueKey('phone number'),
+                          key: ValueKey('phone number'),
                           focusNode: _phoneNumberFocusNode,
                           validator: (value) {
                             if (value.isEmpty) {
@@ -386,12 +435,13 @@ class _SignUpScreenState extends State<SignUpScreen> {
                           },
                           inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                           textInputAction: TextInputAction.next,
-                          onEditingComplete: _submitForm,
+                          onEditingComplete: _isDoctor ? () => FocusScope.of(context)
+                              .requestFocus(_priceFocusNode) : _submitForm,
                           keyboardType: TextInputType.phone,
                           decoration: InputDecoration(
                               border: const UnderlineInputBorder(),
                               filled: true,
-                              prefixIcon: const Icon(Icons.phone_android),
+                              prefixIcon: Icon(Icons.phone_android),
                               labelText: 'Phone number',
                               fillColor: Theme.of(context).backgroundColor),
                           onSaved: (value) {
@@ -399,10 +449,134 @@ class _SignUpScreenState extends State<SignUpScreen> {
                           },
                         ),
                       ),
+                      ConditionalBuilder(
+                        condition: _isDoctor,
+                        builder: (context) => Column(
+                          children: [
+                            Padding(
+                              padding: const EdgeInsets.all(12.0),
+                              child: TextFormField(
+                                key: ValueKey('price'),
+                                focusNode: _priceFocusNode,
+                                validator: (value) {
+                                  if (value.isEmpty) {
+                                    return 'cannot be null';
+                                  }
+                                  return null;
+                                },
+                                textInputAction: TextInputAction.next,
+                                onEditingComplete: () => FocusScope.of(context)
+                                    .requestFocus(_describtionFocusNode),
+                                keyboardType: TextInputType.number,
+                                decoration: InputDecoration(
+                                    border: const UnderlineInputBorder(),
+                                    filled: true,
+                                    prefixIcon: Icon(Icons.attach_money_rounded),
+                                    labelText: 'Online Consultation Price',
+                                    fillColor: Theme.of(context).backgroundColor),
+                                onSaved: (value) {
+                                  _price = double.parse(value);
+                                },
+                              ),
+                            ),
+                            Padding(
+                              padding: const EdgeInsets.all(12.0),
+                              child: TextFormField(
+                                key: ValueKey('Describtion'),
+                                focusNode: _describtionFocusNode,
+                                validator: (value) {
+                                  if (value.isEmpty) {
+                                    return 'cannot be null';
+                                  }
+                                  return null;
+                                },
+                                textInputAction: TextInputAction.next,
+                                onEditingComplete: () => FocusScope.of(context)
+                                    .requestFocus(_titleFocusNode),
+                                keyboardType: TextInputType.multiline,
+                                decoration: InputDecoration(
+                                    border: const UnderlineInputBorder(),
+                                    filled: true,
+                                    prefixIcon: Icon(Icons.description),
+                                    labelText: 'Short Describtion About yourself',
+                                    fillColor: Theme.of(context).backgroundColor),
+                                onSaved: (value) {
+                                  _describtion = value;
+                                },
+                              ),
+                            ),
+                            Padding(
+                              padding: const EdgeInsets.all(12.0),
+                              child: TextFormField(
+                                key: ValueKey('Title'),
+                                focusNode: _titleFocusNode,
+                                validator: (value) {
+                                  if (value.isEmpty) {
+                                    return 'cannot be null';
+                                  }
+                                  return null;
+                                },
+                                textInputAction: TextInputAction.next,
+                                keyboardType: TextInputType.text,
+                                decoration: InputDecoration(
+                                    border: const UnderlineInputBorder(),
+                                    filled: true,
+                                    prefixIcon: Icon(Icons.title),
+                                    labelText: 'Consultation title',
+                                    fillColor: Theme.of(context).backgroundColor),
+                                onSaved: (value) {
+                                  _title = value;
+                                },
+                              ),
+                            ),
+                            Padding(
+                              padding: const EdgeInsets.all(12.0),
+                              child: FormField<String>(
+                                key: ValueKey('Speciality'),
+                                validator: (value) {
+                                  if (value.isEmpty) {
+                                    return 'cannot be null';
+                                  }
+                                  return null;
+                                },
+                                builder: (FormFieldState<String> state) {
+                                  return InputDecorator(
+                                    isEmpty: false,
+                                    decoration: InputDecoration(
+                                        border: const UnderlineInputBorder(),
+                                        filled: true,
+                                        prefixIcon: Icon(Icons.psychology_rounded),
+                                        labelText: 'Speciality',
+                                        fillColor: Theme.of(context).backgroundColor),
+                                    child: DropdownButtonHideUnderline(
+                                      child: DropdownButton<String>(
+                                        value: speciality,
+                                        onChanged: (String newValue) {
+                                          setState(() {
+                                            speciality = newValue;
+                                            state.didChange(newValue);
+                                          });
+                                        },
+                                        items: _specialities.map((String value) {
+                                          return DropdownMenuItem<String>(
+                                            value: value,
+                                            child: Text(value),
+                                          );
+                                        }).toList(),
+                                      ),
+                                    ),
+                                  );
+                                },
+                              ),
+                            )
+
+                          ],
+                        ),
+                      ),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.end,
                         children: [
-                          const SizedBox(width: 10),
+                          SizedBox(width: 10),
                           _isLoading
                               ? const CircularProgressIndicator()
                               : Expanded(
@@ -419,7 +593,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                     onPressed: _submitForm,
                                     child: Row(
                                       mainAxisAlignment: MainAxisAlignment.center,
-                                      children: const [
+                                      children: [
                                         Text(
                                           'Sign up',
                                           style: TextStyle(
@@ -436,17 +610,17 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                       ],
                                     )),
                               ),
-                          const SizedBox(width: 10),
+                          SizedBox(width: 10),
                         ],
                       ),
                       Column(
                         mainAxisAlignment: MainAxisAlignment.end,
                         children: [
                           Row(
-                            children: const [
+                            children: [
                               Expanded(
                                 child: Padding(
-                                  padding: EdgeInsets.symmetric(
+                                  padding: const EdgeInsets.symmetric(
                                       horizontal: 10),
                                   child: Divider(
                                     color: Colors.white,
@@ -460,7 +634,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                               ),
                               Expanded(
                                 child: Padding(
-                                  padding: EdgeInsets.symmetric(
+                                  padding: const EdgeInsets.symmetric(
                                       horizontal: 10),
                                   child: Divider(
                                     color: Colors.white,
@@ -470,7 +644,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                               ),
                             ],
                           ),
-                          const SizedBox(
+                          SizedBox(
                             height: 30,
                           ),
                           Row(
@@ -478,31 +652,32 @@ class _SignUpScreenState extends State<SignUpScreen> {
                             children: [
                               OutlineButton(
                                 onPressed: _submitForm,
-                                shape: const StadiumBorder(),
+                                shape: StadiumBorder(),
                                 highlightedBorderColor: Colors.red.shade200,
                                 borderSide:
-                                    const BorderSide(width: 2, color: Color(0xFFFB6073)),
-                                child: const Text('Google +',style: TextStyle(color: Colors.black,),),
+                                    BorderSide(width: 2, color: Color(0xFFFB6073)),
+                                child: Text('Google +',style: TextStyle(color: Colors.black,),),
                               ),
                               OutlineButton(
                                 onPressed: () {
                                   Navigator.pushNamed(
                                       context, BottomBarScreen.routeName);
                                 },
-                                shape: const StadiumBorder(),
+                                shape: StadiumBorder(),
                                 highlightedBorderColor:
                                     Colors.deepPurple.shade200,
-                                borderSide: const BorderSide(
+                                borderSide: BorderSide(
                                     width: 2, color:Color(0xFFA0ABFF)),
-                                child: const Text('Guest Login',style: TextStyle(color: Colors.black,),),
+                                child: Text('Guest Login',style: TextStyle(color: Colors.black,),),
                               ),
                             ],
                           ),
-                          const SizedBox(
+                          SizedBox(
                             height: 100,
                           ),
                         ],
                       ),
+
                     ],
                   ),
                 ),
